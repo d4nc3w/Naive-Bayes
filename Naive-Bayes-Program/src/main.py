@@ -21,8 +21,8 @@ def laplace_smoothing(label_data, train_x):
 
         cond_probabilities[col] = {}
         for value in train_x[col].unique(): # Iterate over unique values in feature
-            count = value_counts.get(value, 0) # Get count of value
-            smoothed_count = count + 1 # Laplace
+            count = value_counts.get(value, 0) # Get count of value or 0 if missing
+            smoothed_count = count + 1 # Laplace method
             probability = smoothed_count / total_values
             cond_probabilities[col][value] = probability
 
@@ -50,11 +50,13 @@ def predict_instance(row, prior, cond_probabilities):
             max_label = label
     return max_label
 
-def predict(x_test, prior, cond_probabilities):
+def predict(x_test, test_y, prior, cond_probabilities):
     predictions = []
-    for _, row in x_test.iterrows(): # Iterate over test instances
+    for i, row in x_test.iterrows(): # Iterate over test instances
         max_label = predict_instance(row, prior, cond_probabilities) # Predict label for current instance
         predictions.append(max_label) # Append predicted label to list
+        true_label = test_y.iloc[i]  # Get true label
+        print(f"Prediction - {max_label}, True Label - {true_label}")  # Print prediction and true label
     return predictions
 
 def accuracy(y_true, y_pred):
@@ -62,15 +64,15 @@ def accuracy(y_true, y_pred):
     return correct / len(y_true)
 
 def precision(y_true, y_pred):
-    correct_p = sum((true == 'p' and pred == 'p') for true, pred in zip(y_true, y_pred)) # Count true positives
-    wrong_p = sum((true == 'e' and pred == 'p') for true, pred in zip(y_true, y_pred)) # Count false positives
+    correct_p = sum(1 for i in range(len(y_true)) if y_true[i] == 'p' and y_pred[i] == 'p')  # Count true positives
+    wrong_p = sum(1 for i in range(len(y_true)) if y_true[i] == 'e' and y_pred[i] == 'p')  # Count false positives
     if correct_p + wrong_p == 0:
         return 0
     return correct_p / (correct_p + wrong_p)
 
 def recall(y_true, y_pred):
-    correct_p = sum((true == 'p' and pred == 'p') for true, pred in zip(y_true, y_pred))  # Count true positives
-    wrong_n = sum((true == 'p' and pred == 'e') for true, pred in zip(y_true, y_pred)) # Count false negatives
+    correct_p = sum(1 for i in range(len(y_true)) if y_true[i] == 'p' and y_pred[i] == 'p')  # Count true positives
+    wrong_n = sum(1 for i in range(len(y_true)) if y_true[i] == 'p' and y_pred[i] == 'e')  # Count false negatives
     if correct_p + wrong_n == 0:
         return 0
     return correct_p / (correct_p + wrong_n)
@@ -113,8 +115,9 @@ while True:
         else:
             print("Testing Model...")
             test_x, test_y = load_data(test_file)
-            predictions = predict(test_x, prior, cond_probabilities)
+            predictions = predict(test_x, test_y, prior, cond_probabilities)
             acc, prec, rec, f_meas = evaluate(test_y, predictions)
+
             print("----------Model Info----------")
             print("Accuracy:", acc)
             print("Precision:", prec)
