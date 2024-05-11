@@ -14,6 +14,19 @@ def fit_model(train_x, train_y):
     unique_labels = train_y.unique()
     label_count = train_y.value_counts()
     num_of_instances = len(train_y)
-    prior = {label: label_count[label] / num_of_instances for label in unique_labels}
+    prior_probabilities = {label: label_count[label] / num_of_instances for label in unique_labels}
+
+    # Calculate cond. probabilities
+    cond_probabilities = {}
+    for label in unique_labels:
+        label_data = train_x[train_y == label]
+        cond_probabilities[label] = {}
+        for col in train_x.columns:
+            value_counts = label_data[col].value_counts(normalize=True).to_dict()
+            cond_probabilities[label][col] = value_counts
+
+    return prior_probabilities, cond_probabilities
+
+
 
 
