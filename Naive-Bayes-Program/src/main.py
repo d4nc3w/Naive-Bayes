@@ -23,7 +23,9 @@ def fit_model(train_x, train_y):
         cond_probabilities[label] = {}
         for col in train_x.columns:
             value_counts = label_data[col].value_counts(normalize=True).to_dict()
-            total_values = len(label_data) + len(train_x[col].unique())  # Add Laplace smoothing
+            # Laplace smoothing
+            total_values = len(label_data) + len(train_x[col].unique())
+
             for value in train_x[col].unique():
                 if value not in value_counts:
                     value_counts[value] = 0
@@ -41,9 +43,6 @@ def predict(x_test, prior, cond_probabilities):
             for col, value in row.items():
                 if value in cond_probabilities[label][col]:
                     prob *= cond_probabilities[label][col][value]
-                else:
-                    # Smoothing
-                    prob *= 1 / (len(cond_probabilities[label][col]) + len(x_test[col].unique()))
             if prob > max_prob:
                 max_prob = prob
                 max_label = label
@@ -56,18 +55,18 @@ def accuracy(y_true, y_pred):
     return correct / len(y_true)
 
 def precision(y_true, y_pred):
-    tp = sum((true == 'p' and pred == 'p') for true, pred in zip(y_true, y_pred))
-    fp = sum((true == 'e' and pred == 'p') for true, pred in zip(y_true, y_pred))
-    if tp + fp == 0:
+    correctP = sum((true == 'p' and pred == 'p') for true, pred in zip(y_true, y_pred))
+    wrongP = sum((true == 'e' and pred == 'p') for true, pred in zip(y_true, y_pred))
+    if correctP + wrongP == 0:
         return 0
-    return tp / (tp + fp)
+    return correctP / (correctP + wrongP)
 
 def recall(y_true, y_pred):
-    tp = sum((true == 'p' and pred == 'p') for true, pred in zip(y_true, y_pred))
-    fn = sum((true == 'p' and pred == 'e') for true, pred in zip(y_true, y_pred))
-    if tp + fn == 0:
+    correctP = sum((true == 'p' and pred == 'p') for true, pred in zip(y_true, y_pred))
+    wrongN = sum((true == 'p' and pred == 'e') for true, pred in zip(y_true, y_pred))
+    if correctP + wrongN == 0:
         return 0
-    return tp / (tp + fn)
+    return correctP / (correctP + wrongN)
 
 def f_measure(y_true, y_pred):
     p = precision(y_true, y_pred)
@@ -129,8 +128,6 @@ while True:
             print("Precision:", prec)
             print("Recall:", rec)
             print("F-measure:", f_meas)
-
-
     if choice == 4:
         print("Closing...")
         print("------------------------------")
