@@ -48,7 +48,7 @@ def predict(x_test, prior, cond_probabilities):
                 max_prob = prob
                 max_label = label
         predictions.append(max_label)
-        print(f"Instance {i + 1}: Prediction - {max_label}, True Label - {test_y.iloc[i]}")
+        print(f"Prediction - {max_label}, True Label - {test_y.iloc[i]}")
     return predictions
 
 def accuracy(y_true, y_pred):
@@ -83,16 +83,57 @@ def evaluate(y_true, y_pred):
     f = f_measure(y_true, y_pred)
     return acc, prec, rec, f
 
-# Main
-train_x, train_y = load_data(train_file)
-test_x, test_y = load_data(test_file)
+# Program Interface
+isTrained = False
+isTested = False
+while True:
+    print("-------------MENU-------------")
+    print("(1) Train Model")
+    print("(2) Test Model")
+    print("(3) Print Model Info")
+    print("(4) Exit")
+    print("------------------------------")
+    choice = int(input("Enter your choice: "))
+    if choice == 1:
+        print("Training Model...")
+        train_x, train_y = load_data(train_file)
+        prior, cond_probabilities = fit_model(train_x, train_y)
+        isTrained = True
+        print("Model trained successfully")
+    if choice == 2:
+        if (isTrained == False):
+            print("Model not trained yet")
+            continue
+        else:
+            print("Testing Model...")
+            test_x, test_y = load_data(test_file)
+            predictions = predict(test_x, prior, cond_probabilities)
+            acc, prec, rec, f_meas = evaluate(test_y, predictions)
+            print("----------Model Info----------")
+            print("Accuracy:", acc)
+            print("Precision:", prec)
+            print("Recall:", rec)
+            print("F-measure:", f_meas)
+            isTested = True
+    if choice == 3:
+        if (isTrained == False):
+            print("Model not trained yet")
+            continue
+        elif(isTested == False):
+            print("Model not tested yet")
+            continue
+        else:
+            acc, prec, rec, f_meas = evaluate(test_y, predictions)
+            print("----------Model Info----------")
+            print("Accuracy:", acc)
+            print("Precision:", prec)
+            print("Recall:", rec)
+            print("F-measure:", f_meas)
 
-prior, cond_probabilities = fit_model(train_x, train_y)
 
-predictions = predict(test_x, prior, cond_probabilities)
+    if choice == 4:
+        print("Closing...")
+        print("------------------------------")
+        exit()
 
-acc, prec, rec, f_meas = evaluate(test_y, predictions)
-print("Accuracy:", acc)
-print("Precision:", prec)
-print("Recall:", rec)
-print("F-measure:", f_meas)
+
