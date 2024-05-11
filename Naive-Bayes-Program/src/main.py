@@ -46,6 +46,34 @@ def predict(x_test, prior, cond_probabilities):
         predictions.append(max_label)
     return predictions
 
+def accuracy(y_true, y_pred):
+    correct = 0
+    for i in range(len(y_true)):
+        if y_true[i] == y_pred[i]:
+            correct += 1
+    return correct / len(y_true)
+
+def precision(y_true, y_pred):
+    tp = 0
+    fp = 0
+    for i in range(len(y_true)):
+        if y_true[i] == y_pred[i] == 1:
+            tp += 1
+        elif y_true[i] == 0 and y_pred[i] == 1:
+            fp += 1
+    return tp / (tp + fp)
+
+def recall(y_true, y_pred):
+    tp = 0
+    fn = 0
+    for i in range(len(y_true)):
+        if y_true[i] == y_pred[i] == 1:
+            tp += 1
+        elif y_true[i] == 1 and y_pred[i] == 0:
+            fn += 1
+    return tp / (tp + fn)
+
+
 
 
 
