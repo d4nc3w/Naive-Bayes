@@ -1,7 +1,7 @@
 import pandas as pd
 
-agaricus_train = '/Users/pjotr/PycharmProjects/res/agaricus-lepiota.data'
-agaricus_test = '/Users/pjotr/PycharmProjects/res/agaricus-lepiota.test'
+train_file = '/Users/pjotr/PycharmProjects/res/agaricus-lepiota.data'
+test_file = '/Users/pjotr/PycharmProjects/res/agaricus-lepiota.test'
 
 def load_data(file):
     reader = pd.read_csv(file, header=None)
@@ -26,6 +26,29 @@ def fit_model(train_x, train_y):
             cond_probabilities[label][col] = value_counts
 
     return prior_probabilities, cond_probabilities
+
+def predict(x_test, prior, cond_probabilities):
+    predictions = []
+    for _, row in x_test.iterrows():
+        max_prob = -1
+        max_label = None
+        for label, prior_prob in prior.items():
+            prob = prior_prob
+            for col, value in row.iteritems():
+                if value in cond_probabilities[label][col]:
+                    prob *= cond_probabilities[label][col][value]
+                else:
+                    # Smoothing
+                    prob *= 1 / len(cond_probabilities[label][col])
+            if prob > max_prob:
+                max_prob = prob
+                max_label = label
+        predictions.append(max_label)
+    return predictions
+
+
+
+
 
 
 
