@@ -9,4 +9,11 @@ def load_data(file):
     y = reader.iloc[:, 0]
     return x, y
 
+def fit_model(train_x, train_y):
+    # Calculate prior
+    unique_labels = train_y.unique()
+    label_count = train_y.value_counts()
+    num_of_instances = len(train_y)
+    prior = {label: label_count[label] / num_of_instances for label in unique_labels}
+
 
