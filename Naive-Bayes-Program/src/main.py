@@ -9,45 +9,48 @@ def load_data(file):
     y = reader.iloc[:, 0]
     return x, y
 
-def fit_model(train_x, train_y):
-    # Calculate prior
-    unique_labels = train_y.unique()
+def calculate_prior(train_y):
     label_count = train_y.value_counts()
-    num_of_instances = len(train_y)
-    prior_probabilities = {label: label_count[label] / num_of_instances for label in unique_labels}
+    return label_count / len(train_y)
 
-    # Calculate cond. probabilities (Laplace)
+def laplace_smoothing(label_data, train_x):
+    cond_probabilities = {}
+    for col in train_x.columns:
+        value_counts = label_data[col].value_counts(normalize=True).to_dict()
+        total_values = len(label_data) + len(train_x[col].unique())
+        for value in train_x[col].unique():
+            if value not in value_counts:
+                value_counts[value] = 0
+        cond_probabilities[col] = {value: (value_counts[value] + 1) / total_values for value in train_x[col].unique()}
+    return cond_probabilities
+
+def fit_model(train_x, train_y):
+    unique_labels = train_y.unique()
+    prior_probabilities = calculate_prior(train_y)
     cond_probabilities = {}
     for label in unique_labels:
         label_data = train_x[train_y == label]
-        cond_probabilities[label] = {}
-        for col in train_x.columns:
-            value_counts = label_data[col].value_counts(normalize=True).to_dict()
-            # Laplace smoothing
-            total_values = len(label_data) + len(train_x[col].unique())
-
-            for value in train_x[col].unique():
-                if value not in value_counts:
-                    value_counts[value] = 0
-            cond_probabilities[label][col] = {value: (value_counts[value] + 1) / total_values for value in train_x[col].unique()}
-
+        cond_probabilities[label] = laplace_smoothing(label_data, train_x)
     return prior_probabilities, cond_probabilities
+
+def predict_instance(row, prior, cond_probabilities):
+    max_prob = -1
+    max_label = None
+    for label, prior_prob in prior.items():
+        prob = prior_prob
+        for col, value in row.items():
+            if value in cond_probabilities[label][col]:
+                prob *= cond_probabilities[label][col][value]
+        if prob > max_prob:
+            max_prob = prob
+            max_label = label
+    return max_label
 
 def predict(x_test, prior, cond_probabilities):
     predictions = []
-    for i, (_, row) in enumerate(x_test.iterrows()):
-        max_prob = -1
-        max_label = None
-        for label, prior_prob in prior.items():
-            prob = prior_prob
-            for col, value in row.items():
-                if value in cond_probabilities[label][col]:
-                    prob *= cond_probabilities[label][col][value]
-            if prob > max_prob:
-                max_prob = prob
-                max_label = label
+    for _, row in x_test.iterrows():
+        max_label = predict_instance(row, prior, cond_probabilities)
         predictions.append(max_label)
-        print(f"Prediction - {max_label}, True Label - {test_y.iloc[i]}")
     return predictions
 
 def accuracy(y_true, y_pred):
@@ -55,18 +58,18 @@ def accuracy(y_true, y_pred):
     return correct / len(y_true)
 
 def precision(y_true, y_pred):
-    correctP = sum((true == 'p' and pred == 'p') for true, pred in zip(y_true, y_pred))
-    wrongP = sum((true == 'e' and pred == 'p') for true, pred in zip(y_true, y_pred))
-    if correctP + wrongP == 0:
+    correct_p = sum((true == 'p' and pred == 'p') for true, pred in zip(y_true, y_pred))
+    wrong_p = sum((true == 'e' and pred == 'p') for true, pred in zip(y_true, y_pred))
+    if correct_p + wrong_p == 0:
         return 0
-    return correctP / (correctP + wrongP)
+    return correct_p / (correct_p + wrong_p)
 
 def recall(y_true, y_pred):
-    correctP = sum((true == 'p' and pred == 'p') for true, pred in zip(y_true, y_pred))
-    wrongN = sum((true == 'p' and pred == 'e') for true, pred in zip(y_true, y_pred))
-    if correctP + wrongN == 0:
+    correct_p = sum((true == 'p' and pred == 'p') for true, pred in zip(y_true, y_pred))
+    wrong_n = sum((true == 'p' and pred == 'e') for true, pred in zip(y_true, y_pred))
+    if correct_p + wrong_n == 0:
         return 0
-    return correctP / (correctP + wrongN)
+    return correct_p / (correct_p + wrong_n)
 
 def f_measure(y_true, y_pred):
     p = precision(y_true, y_pred)
