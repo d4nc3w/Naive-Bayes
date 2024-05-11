@@ -5,11 +5,10 @@ Simple Naive-Bayes program written in Python
 
   Defining File Paths:
 
+  These variables hold the paths to the training and test data files.
+
     test_file = '/Users/pjotr/PycharmProjects/Naive-Bayes/Naive-Bayes-Program/res/agaricus-lepiota.test.data'
     train_file = '/Users/pjotr/PycharmProjects/Naive-Bayes/Naive-Bayes-Program/res/agaricus-lepiota.data'
-  
-    
-These variables hold the paths to the training and test data files.
 
 Step by step:
 
@@ -23,21 +22,21 @@ return x, y: Returns the features (x) and labels (y).
 
   Load Data Function:
 
+  This function reads data from a CSV file using pandas. It assumes that the first column contains labels and the remaining columns contain features.
+
      def load_data(file):
         reader = pd.read_csv(file, header=None)
         x = reader.iloc[:, 1:]  # Features
         y = reader.iloc[:, 0]   # Labels
         return x, y
-    
-This function reads data from a CSV file using pandas. It assumes that the first column contains labels and the remaining columns contain features.
 
   Calculate Prior Function:
+
+  This function calculates the prior probabilities of each class based on the frequency of occurrence in the training data.
 
     def calculate_prior(train_y):
         label_count = train_y.value_counts()  
         return label_count / len(train_y)       
-    
-This function calculates the prior probabilities of each class based on the frequency of occurrence in the training data.
 
 Step by step: 
 
@@ -47,14 +46,14 @@ return label_count / len(train_y): Divides the count of each label by the total 
 
   Laplace Smoothing Function:
 
+  This function applies Laplace smoothing to the conditional probabilities of each feature given the class.
+
     def laplace_smoothing(label_data, train_x):
         cond_probabilities = {}
         for col in train_x.columns:  # Iterate over features
             value_counts = label_data[col].value_counts(normalize=True).to_dict() # Count occurrences of each value
             total_values = len(label_data) + len(train_x[col].unique())  # Total number of values for Laplace smoothing
             ...
-        
-This function applies Laplace smoothing to the conditional probabilities of each feature given the class.
 
 Step by step:
 
@@ -64,6 +63,8 @@ total_values = len(label_data) + len(train_x[col].unique()): Calculates the tota
 
   Fit Model Function:
 
+  This function fits the Naive Bayes model by calculating prior probabilities and conditional probabilities for each feature.
+
     def fit_model(train_x, train_y):
         unique_labels = train_y.unique() # Get unique labels in training data
         prior_probabilities = calculate_prior(train_y) # Calculate prior probabilities
@@ -72,8 +73,6 @@ total_values = len(label_data) + len(train_x[col].unique()): Calculates the tota
             label_data = train_x[train_y == label] # Filter data for current label
             cond_probabilities[label] = laplace_smoothing(label_data, train_x) # Apply Laplace smoothing
         return prior_probabilities, cond_probabilities
-    
-This function fits the Naive Bayes model by calculating prior probabilities and conditional probabilities for each feature.
 
 Step by step:
 
@@ -85,6 +84,8 @@ cond_probabilities[label] = laplace_smoothing(label_data, train_x): Calculates c
 
   Prediction Functions:
 
+  This function predicts the label for a single instance using the Naive Bayes classifier.
+
     def predict_instance(row, prior, cond_probabilities):
         max_prob = -1
         max_label = None
@@ -94,8 +95,6 @@ cond_probabilities[label] = laplace_smoothing(label_data, train_x): Calculates c
                 if value in cond_probabilities[label][col]: # Check if value is in conditional probabilities
                     prob *= cond_probabilities[label][col][value] # Multiply probability by conditional probability
                     ...
-                    
-This function predicts the label for a single instance using the Naive Bayes classifier.
 
 Step by step:
 
@@ -107,16 +106,18 @@ prob *= cond_probabilities[label][col][value]: Updates the probability by multip
 
   Evaluation Metrics Functions:
 
+  These functions calculate various evaluation metrics like accuracy, precision, recall, and F-measure.
+
     def accuracy(y_true, y_pred):
         ...
-    
-These functions calculate various evaluation metrics like accuracy, precision, recall, and F-measure.
 
 Step by step:
 
 These functions calculate different evaluation metrics such as accuracy, precision, recall, and F-measure based on the true labels (y_true) and predicted labels (y_pred).
 
   Evaluate Function:
+
+  This function computes all evaluation metrics at once.
   
     def evaluate(y_true, y_pred):
         acc = accuracy(y_true, y_pred)
@@ -124,12 +125,11 @@ These functions calculate different evaluation metrics such as accuracy, precisi
         rec = recall(y_true, y_pred)
         f = f_measure(y_true, y_pred)
         return acc, prec, rec, f
-    
-This function computes all evaluation metrics at once.
 
 Step by step:
 
 Calls the individual evaluation metric functions and returns the calculated values.
 
   Program Interface:
+  
 The rest of the code is for the program interface. It allows the user to train the model, test the model, print model info, or exit the program based on user input.
