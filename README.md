@@ -11,6 +11,16 @@ Simple Naive-Bayes program written in Python
     
 These variables hold the paths to the training and test data files.
 
+Step by step:
+
+pd.read_csv(file, header=None): Reads the CSV file specified by file using pandas read_csv function, assuming no header.
+
+reader.iloc[:, 1:]: Selects all rows and all columns starting from the second column, representing the features.
+
+reader.iloc[:, 0]: Selects all rows and only the first column, representing the labels.
+
+return x, y: Returns the features (x) and labels (y).
+
   Load Data Function:
 
      def load_data(file):
@@ -29,6 +39,12 @@ This function reads data from a CSV file using pandas. It assumes that the first
     
 This function calculates the prior probabilities of each class based on the frequency of occurrence in the training data.
 
+Step by step: 
+
+train_y.value_counts(): Counts the occurrences of each unique value in the Series train_y, effectively counting the occurrences of each label.
+
+return label_count / len(train_y): Divides the count of each label by the total number of samples (len(train_y)), obtaining the prior probabilities.
+
   Laplace Smoothing Function:
 
     def laplace_smoothing(label_data, train_x):
@@ -39,6 +55,12 @@ This function calculates the prior probabilities of each class based on the freq
             ...
         
 This function applies Laplace smoothing to the conditional probabilities of each feature given the class.
+
+Step by step:
+
+label_data[col].value_counts(normalize=True).to_dict(): Counts the occurrences of each unique value in the column col of label_data and converts it to a dictionary with normalized probabilities.
+
+total_values = len(label_data) + len(train_x[col].unique()): Calculates the total number of unique values in the column col, including missing values, and adds it to the length of label_data. This is used for Laplace smoothing.
 
   Fit Model Function:
 
@@ -52,6 +74,14 @@ This function applies Laplace smoothing to the conditional probabilities of each
         return prior_probabilities, cond_probabilities
     
 This function fits the Naive Bayes model by calculating prior probabilities and conditional probabilities for each feature.
+
+Step by step:
+
+train_y.unique(): Retrieves unique labels from train_y.
+
+label_data = train_x[train_y == label]: Filters the features (train_x) based on the current label (label).
+
+cond_probabilities[label] = laplace_smoothing(label_data, train_x): Calculates conditional probabilities for each feature given the label using Laplace smoothing.
 
   Prediction Functions:
 
@@ -67,12 +97,24 @@ This function fits the Naive Bayes model by calculating prior probabilities and 
                     
 This function predicts the label for a single instance using the Naive Bayes classifier.
 
+Step by step:
+
+for label, prior_prob in prior.items(): Iterates over each class (label) and its prior probability (prior_prob).
+
+for col, value in row.items(): Iterates over each feature (col) and its value (value) in the current instance (row).
+
+prob *= cond_probabilities[label][col][value]: Updates the probability by multiplying it with the corresponding conditional probability.
+
   Evaluation Metrics Functions:
 
     def accuracy(y_true, y_pred):
         ...
     
 These functions calculate various evaluation metrics like accuracy, precision, recall, and F-measure.
+
+Step by step:
+
+These functions calculate different evaluation metrics such as accuracy, precision, recall, and F-measure based on the true labels (y_true) and predicted labels (y_pred).
 
   Evaluate Function:
   
@@ -84,6 +126,10 @@ These functions calculate various evaluation metrics like accuracy, precision, r
         return acc, prec, rec, f
     
 This function computes all evaluation metrics at once.
+
+Step by step:
+
+Calls the individual evaluation metric functions and returns the calculated values.
 
   Program Interface:
 The rest of the code is for the program interface. It allows the user to train the model, test the model, print model info, or exit the program based on user input.
