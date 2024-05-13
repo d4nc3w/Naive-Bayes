@@ -91,16 +91,16 @@ def recall(true_labels, predicted_labels):
     wrong_n = sum(1 for i in range(len(true_labels)) if true_labels[i] == 'p' and predicted_labels[i] == 'e')
     return correct_p / (correct_p + wrong_n)
 
-def f_measure(y_true, y_pred):
-    p = precision(y_true, y_pred)
-    r = recall(y_true, y_pred)
+def f_measure(true_labels, predicted_labels):
+    p = precision(true_labels, predicted_labels)
+    r = recall(true_labels, predicted_labels)
     return 2 * p * r / (p + r)
 
-def get_model_info(y_true, y_pred):
-    acc = accuracy(y_true, y_pred)
-    prec = precision(y_true, y_pred)
-    rec = recall(y_true, y_pred)
-    f = f_measure(y_true, y_pred)
+def get_model_info(true_labels, predicted_labels):
+    acc = accuracy(true_labels, predicted_labels)
+    prec = precision(true_labels, predicted_labels)
+    rec = recall(true_labels, predicted_labels)
+    f = f_measure(true_labels, predicted_labels)
     return acc, prec, rec, f
 
 # --------------------------------------------
