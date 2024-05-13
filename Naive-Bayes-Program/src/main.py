@@ -90,6 +90,7 @@ def evaluate(y_true, y_pred):
     f = f_measure(y_true, y_pred)
     return acc, prec, rec, f
 
+# --------------------------------------------
 # Program Interface
 isTrained = False
 isTested = False
