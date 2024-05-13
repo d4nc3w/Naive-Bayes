@@ -44,7 +44,7 @@ def fit_model(train_attributes, train_labels):
     return prior_probabilities, cond_probabilities
 
 def predict_instance(row, prior_probabilities, cond_probabilities):
-    max_prob = -1
+    max_prob = 0
     prediction_label = None
     for label, prior_prob in prior_probabilities.items():
         # Initialize prior probability
