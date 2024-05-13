@@ -10,16 +10,6 @@ Simple Naive-Bayes program written in Python
     test_file = '/Users/pjotr/PycharmProjects/Naive-Bayes/Naive-Bayes-Program/res/agaricus-lepiota.test.data'
     train_file = '/Users/pjotr/PycharmProjects/Naive-Bayes/Naive-Bayes-Program/res/agaricus-lepiota.data'
 
-Step by step:
-
-pd.read_csv(file, header=None): Reads the CSV file specified by file using pandas read_csv function, assuming no header.
-
-reader.iloc[:, 1:]: Selects all rows and all columns starting from the second column, representing the features.
-
-reader.iloc[:, 0]: Selects all rows and only the first column, representing the labels.
-
-return x, y: Returns the features (x) and labels (y).
-
   Load Data Function:
 
   This function reads data from a CSV file using pandas. It assumes that the first column contains labels and the remaining columns contain features.
@@ -29,6 +19,16 @@ return x, y: Returns the features (x) and labels (y).
         x = reader.iloc[:, 1:]  # Features
         y = reader.iloc[:, 0]   # Labels
         return x, y
+
+  Step by step:
+
+pd.read_csv(file, header=None): Reads the CSV file specified by file using pandas read_csv function, assuming no header.
+
+reader.iloc[:, 1:]: Selects all rows and all columns starting from the second column, representing the features.
+
+reader.iloc[:, 0]: Selects all rows and only the first column, representing the labels.
+
+return x, y: Returns the features (x) and labels (y).
 
   Calculate Prior Function:
 
