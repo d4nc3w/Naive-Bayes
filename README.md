@@ -51,9 +51,14 @@ return label_count / len(train_y): Divides the count of each label by the total 
     def laplace_smoothing(label_data, train_x):
         cond_probabilities = {}
         for col in train_x.columns:  # Iterate over features
-            value_counts = label_data[col].value_counts(normalize=True).to_dict() # Count occurrences of each value
-            total_values = len(label_data) + len(train_x[col].unique())  # Total number of values for Laplace smoothing
-            ...
+            value_counts = label_data[col].value_counts(normalize=True).to_dict() 
+            total_values = len(label_data) + len(train_x[col].unique())
+            for value in train_attributes[col].unique():
+              count = value_counts.get(value, 0)
+              smoothed_count = count + 1
+              probability = smoothed_count / total_values
+              cond_probabilities[col][value] = probability
+          return cond_probabilities
 
 Step by step:
 
@@ -61,17 +66,25 @@ label_data[col].value_counts(normalize=True).to_dict(): Counts the occurrences o
 
 total_values = len(label_data) + len(train_x[col].unique()): Calculates the total number of unique values in the column col, including missing values, and adds it to the length of label_data. This is used for Laplace smoothing.
 
+count = value_counts.get(value, 0): Get the count of occurrences of the current value in the label_data dictionary. If the value is missing, default to 0.
+
+smoothed_count = count + 1: Apply Laplace smoothing by adding 1 to the count.
+
+probability = smoothed_count / total_values: Calculate the conditional probability for the current value in the current column using Laplace smoothing.
+
+cond_probabilities[col][value] = probability: Update the cond_probabilities dictionary with the calculated probability for the current value in the current column.
+
   Fit Model Function:
 
   This function fits the Naive Bayes model by calculating prior probabilities and conditional probabilities for each feature.
 
     def fit_model(train_x, train_y):
         unique_labels = train_y.unique() # Get unique labels in training data
-        prior_probabilities = calculate_prior(train_y) # Calculate prior probabilities
+        prior_probabilities = calculate_prior(train_y)
         cond_probabilities = {}
         for label in unique_labels: # Iterate over unique labels
             label_data = train_x[train_y == label] # Filter data for current label
-            cond_probabilities[label] = laplace_smoothing(label_data, train_x) # Apply Laplace smoothing
+            cond_probabilities[label] = laplace_smoothing(label_data, train_x) 
         return prior_probabilities, cond_probabilities
 
 Step by step:
@@ -89,12 +102,15 @@ cond_probabilities[label] = laplace_smoothing(label_data, train_x): Calculates c
     def predict_instance(row, prior, cond_probabilities):
         max_prob = -1
         max_label = None
-        for label, prior_prob in prior.items(): # Iterate over classes
-            prob = prior_prob # Initialize probability
-            for col, value in row.items(): # Iterate over features
-                if value in cond_probabilities[label][col]: # Check if value is in conditional probabilities
-                    prob *= cond_probabilities[label][col][value] # Multiply probability by conditional probability
-                    ...
+        for label, prior_prob in prior.items(): 
+            prob = prior_prob
+            for col, value in row.items(): 
+                if value in cond_probabilities[label][col]:
+                    prob *= cond_probabilities[label][col][value] 
+        if prob > max_prob: 
+            max_prob = prob
+            max_label = label
+    return max_label
 
 Step by step:
 
@@ -104,16 +120,19 @@ for col, value in row.items(): Iterates over each feature (col) and its value (v
 
 prob *= cond_probabilities[label][col][value]: Updates the probability by multiplying it with the corresponding conditional probability.
 
-  Evaluation Metrics Functions:
+if prob > max_prob: max_prob = prob max_label = label: If the calculated probability is greater than the current maximum probability max_prob, update max_prob and max_label with the new values.
 
-  These functions calculate various evaluation metrics like accuracy, precision, recall, and F-measure.
+  Accuracy Function:
 
-    def accuracy(y_true, y_pred):
-        ...
+  These functions calculate accuracy of given model.
 
-Step by step:
-
-These functions calculate different evaluation metrics such as accuracy, precision, recall, and F-measure based on the true labels (y_true) and predicted labels (y_pred).
+    def accuracy(true_labels, predicted_labels):
+    correct = 0
+    total = len(true_labels)
+    for i in range(total):
+        if true_labels[i] == predicted_labels[i]:
+            correct += 1
+    return correct / total
 
   Evaluate Function:
 
