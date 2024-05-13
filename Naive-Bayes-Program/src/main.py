@@ -27,8 +27,8 @@ def calculate_cond_probabilities(label_data, train_attributes):
             # Get count of value or 0 if missing
             count = value_counts.get(value, 0)
             # Smoothing
-            smoothed_count = count + 1
-            probability = smoothed_count / total_values
+            count += 1
+            probability = count / total_values
             cond_probabilities[col][value] = probability
     return cond_probabilities
 
@@ -43,10 +43,10 @@ def fit_model(train_attributes, train_labels):
         cond_probabilities[label] = calculate_cond_probabilities(label_data, train_attributes)
     return prior_probabilities, cond_probabilities
 
-def predict_instance(row, prior, cond_probabilities):
+def predict_instance(row, prior_probabilities, cond_probabilities):
     max_prob = -1
-    max_label = None
-    for label, prior_prob in prior.items():
+    prediction_label = None
+    for label, prior_prob in prior_probabilities.items():
         # Initialize prior probability
         prob = prior_prob
         # Iterate over features
@@ -57,16 +57,16 @@ def predict_instance(row, prior, cond_probabilities):
                 prob *= cond_probabilities[label][col][value]
         if prob > max_prob:
             max_prob = prob
-            max_label = label
-    return max_label
+            prediction_label = label
+    return prediction_label
 
-def predict(test_attributes, test_labels, prior, cond_probabilities):
+def predict(test_attributes, test_labels, prior_probabilities, cond_probabilities):
     predictions = []
     for i, row in test_attributes.iterrows():
         # Predict label for current row
-        prediction_label = predict_instance(row, prior, cond_probabilities)
+        prediction_label = predict_instance(row, prior_probabilities, cond_probabilities)
         predictions.append(prediction_label)
-        print("Predicted:", prediction_label, "Actual:", test_labels.iloc[i])
+        print("Predicted:", prediction_label, "Real:", test_labels.iloc[i])
     return predictions
 
 def accuracy(true_labels, predicted_labels):
