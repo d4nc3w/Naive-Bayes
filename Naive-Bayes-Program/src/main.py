@@ -26,11 +26,10 @@ def calculate_cond_probabilities(label_data, train_attributes):
         for value in train_attributes[col].unique():
             # Get count of value or 0 if missing
             count = value_counts.get(value, 0)
-            # Laplace method
+            # Smoothing
             smoothed_count = count + 1
             probability = smoothed_count / total_values
             cond_probabilities[col][value] = probability
-
     return cond_probabilities
 
 def fit_model(train_attributes, train_labels):
